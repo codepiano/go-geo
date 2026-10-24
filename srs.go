@@ -110,6 +110,9 @@ func (p *SRSProj4) TransformTo(o Proj, points []vec2d.T) []vec2d.T {
 	case *BD09MCProj:
 		points = p.TransformTo(_private_4326, points)
 		return prj.transformFromWGS84(points)
+	case *GCJ02WebMercatorProj:
+		points = p.TransformTo(_private_4326, points)
+		return prj.transformFromWGS84(points)
 	case *GCJ02MCProj:
 		points = p.TransformTo(_private_4326, points)
 		return prj.transformFromWGS84(points)

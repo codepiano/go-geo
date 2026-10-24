@@ -63,6 +63,8 @@ func (p *GCJ02Proj) TransformTo(o Proj, points []vec2d.T) []vec2d.T {
 			ret[i] = vec2d.T{lng, lat}
 		}
 		return ret
+	case *GCJ02WebMercatorProj:
+		return prj.transformFromGCJ02(points)
 	case *GCJ02MCProj:
 		ret := make([]vec2d.T, len(points))
 		for i, p := range points {
@@ -173,6 +175,9 @@ func (p *BD09Proj) TransformTo(o Proj, points []vec2d.T) []vec2d.T {
 			ret[i] = vec2d.T{lng, lat}
 		}
 		return ret
+	case *GCJ02WebMercatorProj:
+		wpoints, _ := p.transformToWGS84(points)
+		return prj.transformFromWGS84(wpoints)
 	case *GCJ02MCProj:
 		ret := make([]vec2d.T, len(points))
 		for i, p := range points {
@@ -274,6 +279,9 @@ func newGCJ02MCProj() *GCJ02MCProj {
 
 func (p *GCJ02MCProj) TransformTo(o Proj, points []vec2d.T) []vec2d.T {
 	switch prj := o.(type) {
+	case *GCJ02WebMercatorProj:
+		wpoints, _ := p.transformToWGS84(points)
+		return prj.transformFromWGS84(wpoints)
 	case *GCJ02MCProj:
 		return points
 	case *BD09Proj:
@@ -393,6 +401,9 @@ func (p *BD09MCProj) TransformTo(o Proj, points []vec2d.T) []vec2d.T {
 			ret[i] = vec2d.T{lng, lat}
 		}
 		return ret
+	case *GCJ02WebMercatorProj:
+		wpoints, _ := p.transformToWGS84(points)
+		return prj.transformFromWGS84(wpoints)
 	case *GCJ02MCProj:
 		ret := make([]vec2d.T, len(points))
 		for i, p := range points {
@@ -476,6 +487,8 @@ func NewProj(srsCode interface{}) Proj {
 		switch srsCode {
 		case "EPSG:BDMC", "EPSG:BD09MC", "BD09MC":
 			return newBD09MCProj()
+		case "GCJ02:3857":
+			return &GCJ02WebMercatorProj{}
 		case "EPSG:GCJ02MC", "GCJ02MC":
 			return newGCJ02MCProj()
 		case "EPSG:BD09", "BD09":
@@ -495,7 +508,7 @@ func GetLatLongProj(src Proj) Proj {
 		switch src.GetSrsCode() {
 		case "EPSG:4479":
 			return NewProj("EPSG:4490")
-		case "EPSG:GCJ02MC":
+		case "EPSG:GCJ02MC", "GCJ02:3857":
 			return NewProj("EPSG:GCJ02")
 		case "EPSG:BDMC":
 			return NewProj("EPSG:BD09")
